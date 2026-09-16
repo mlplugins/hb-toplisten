@@ -33,7 +33,8 @@ class HB_Top_Listen_Elements {
 	 */
 	public static function init(): void {
 		add_action( 'init', array( __CLASS__, 'register_shortcodes' ) );
-		add_action( 'ux_builder_setup', array( __CLASS__, 'register_builder_elements' ) );
+		// Nach Flatsome (Priorität 10), das dort erst seine Builder-Helfer lädt.
+		add_action( 'ux_builder_setup', array( __CLASS__, 'register_builder_elements' ), 20 );
 	}
 
 	/**
@@ -155,6 +156,18 @@ class HB_Top_Listen_Elements {
 			return;
 		}
 
+		try {
+			self::add_builder_elements();
+		} catch ( Throwable $e ) {
+			// Nie den UX Builder blockieren – im Fehlerfall fehlen nur die zwei Elemente.
+			HB_Top_Listen_Cache::log( $e );
+		}
+	}
+
+	/**
+	 * Die beiden Elemente beim UX Builder anmelden.
+	 */
+	private static function add_builder_elements(): void {
 		$thumbnail = static function ( string $name ): string {
 			return function_exists( 'flatsome_ux_builder_thumbnail' ) ? flatsome_ux_builder_thumbnail( $name ) : '';
 		};
@@ -362,7 +375,12 @@ class HB_Top_Listen_Elements {
 	 */
 	private static function flatsome_builder_dir(): ?string {
 		$dir = get_template_directory() . '/inc/builder/shortcodes';
-		return file_exists( $dir . '/commons/repeater-options.php' ) && file_exists( $dir . '/commons/box-styles.php' ) ? $dir : null;
+		if ( ! function_exists( 'flatsome_ux_builder_image_sizes' ) && file_exists( get_template_directory() . '/inc/builder/helpers.php' ) ) {
+			require_once get_template_directory() . '/inc/builder/helpers.php';
+		}
+		return function_exists( 'flatsome_ux_builder_image_sizes' )
+			&& file_exists( $dir . '/commons/repeater-options.php' )
+			&& file_exists( $dir . '/commons/box-styles.php' ) ? $dir : null;
 	}
 
 	/**
