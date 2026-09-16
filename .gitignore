@@ -1,0 +1,12 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.log
+
+# Node / Build (falls spaeter benoetigt)
+node_modules/
+vendor/
+
+# Local-Umgebung / Secrets (nie committen)
+*.sql
+*.sql.gz
