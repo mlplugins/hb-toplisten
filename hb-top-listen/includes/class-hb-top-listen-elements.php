@@ -22,6 +22,16 @@ class HB_Top_Listen_Elements {
 	const CATEGORIES_TAG = 'hb_top_categories';
 
 	/**
+	 * Voreingestellter Layout-Typ (Builder-Gruppe «Layout» › «Type»).
+	 *
+	 * Flatsome selbst nimmt «slider»; die bestehenden Startseiten-Bereiche nutzen
+	 * «row» – also mehrere Zeilen à «columns» Spalten (8 Einträge = 2 × 4). Damit
+	 * das Aussehen ohne Zutun passt, ist «row» hier der Default. Frei wählbar
+	 * bleibt alles: slider, slider-full, row, masonry, grid.
+	 */
+	const DEFAULT_LAYOUT_TYPE = 'row';
+
+	/**
 	 * Eigene Einstellungen bzw. Attribute, die nicht an Flatsome gehen
 	 * (die Auswahl steuert ausschliesslich das Plugin).
 	 */
@@ -68,7 +78,7 @@ class HB_Top_Listen_Elements {
 				return '';
 			}
 
-			$layout        = self::layout_atts( $atts, self::PRODUCT_OWN_ATTS );
+			$layout        = self::with_default_type( self::layout_atts( $atts, self::PRODUCT_OWN_ATTS ) );
 			$layout['ids'] = implode( ',', array_keys( $picked ) );
 			return do_shortcode( self::build_shortcode( 'ux_products', $layout ) );
 		} catch ( Throwable $e ) {
@@ -96,7 +106,7 @@ class HB_Top_Listen_Elements {
 				return '';
 			}
 
-			$layout        = self::layout_atts( $atts, self::CATEGORY_OWN_ATTS );
+			$layout        = self::with_default_type( self::layout_atts( $atts, self::CATEGORY_OWN_ATTS ) );
 			$layout['ids'] = implode( ',', array_map( 'intval', $ids ) );
 			return do_shortcode( self::build_shortcode( 'ux_product_categories', $layout ) );
 		} catch ( Throwable $e ) {
@@ -129,6 +139,23 @@ class HB_Top_Listen_Elements {
 				continue;
 			}
 			$layout[ $key ] = (string) $value;
+		}
+		return $layout;
+	}
+
+	/**
+	 * Layout-Typ vorbelegen, falls der Shortcode keinen mitbringt.
+	 *
+	 * Der UX Builder schreibt Attribute, die auf ihrem Default stehen, nicht in
+	 * den Shortcode. Ohne dieses Nachziehen würde das Panel «Row» anzeigen, die
+	 * Ausgabe aber den Flatsome-PHP-Default «slider» nehmen.
+	 *
+	 * @param array $layout Durchgereichte Layout-Attribute.
+	 * @return array
+	 */
+	private static function with_default_type( array $layout ): array {
+		if ( ! isset( $layout['type'] ) || '' === trim( $layout['type'] ) ) {
+			$layout['type'] = self::DEFAULT_LAYOUT_TYPE;
 		}
 		return $layout;
 	}
@@ -397,7 +424,7 @@ class HB_Top_Listen_Elements {
 
 		// Diese Variablen erwarten die Flatsome-Definitionen im lokalen Scope.
 		$repeater_columns     = '4';
-		$repeater_type        = 'slider';
+		$repeater_type        = self::DEFAULT_LAYOUT_TYPE;
 		$repeater_col_spacing = 'small';
 		$default_text_align   = 'left';
 
@@ -482,7 +509,7 @@ class HB_Top_Listen_Elements {
 		}
 
 		$repeater_columns     = '4';
-		$repeater_type        = 'slider';
+		$repeater_type        = self::DEFAULT_LAYOUT_TYPE;
 		$repeater_col_spacing = 'normal';
 		$default_text_align   = 'center';
 

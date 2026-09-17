@@ -103,8 +103,19 @@ class HB_Top_Listen_Ranking {
 	}
 
 	/**
+	 * Eigen-Status dieses Shops, die keinen bezahlten Umsatz bedeuten.
+	 *
+	 * WooCommerce Analytics zählt sie mit, weil sie nicht in der Option
+	 * «woocommerce_excluded_report_order_statuses» stehen – «pending» trifft
+	 * «pending-payment» nicht. Das Plugin schliesst sie bewusst aus; die
+	 * Zahlen weichen dadurch in diesem Punkt von Analytics ab.
+	 */
+	const UNPAID_STATUSES = array( 'pending-payment', 'gedropped' );
+
+	/**
 	 * Bestellstatus, die nicht zählen – gespiegelt von WooCommerce Analytics
-	 * (Option «woocommerce_excluded_report_order_statuses» plus Entwürfe/Papierkorb).
+	 * (Option «woocommerce_excluded_report_order_statuses» plus Entwürfe/Papierkorb),
+	 * ergänzt um die unbezahlten Eigen-Status aus UNPAID_STATUSES.
 	 *
 	 * @return string[] Status-Slugs wie in wc_order_stats (mit «wc-»-Präfix).
 	 */
@@ -116,7 +127,14 @@ class HB_Top_Listen_Ranking {
 		$excluded = array_merge( array( 'auto-draft', 'trash' ), $excluded );
 		/** Derselbe Filter, den WooCommerce Analytics verwendet. */
 		$excluded = (array) apply_filters( 'woocommerce_analytics_excluded_order_statuses', $excluded );
-		$excluded = array_merge( $excluded, array( 'checkout-draft' ) );
+		$excluded = array_merge( $excluded, array( 'checkout-draft' ), self::UNPAID_STATUSES );
+
+		/**
+		 * Filtert die nicht gezählten Bestellstatus.
+		 *
+		 * @param string[] $excluded Status-Slugs, mit oder ohne «wc-»-Präfix.
+		 */
+		$excluded = (array) apply_filters( 'hb_top_listen_excluded_statuses', $excluded );
 
 		$slugs = array();
 		foreach ( $excluded as $status ) {
@@ -246,8 +264,11 @@ class HB_Top_Listen_Ranking {
 	 */
 	private static function base_where( array $args, array &$params ): array {
 		$statuses = self::excluded_statuses();
-		$where    = array( 's.status NOT IN (' . implode( ',', array_fill( 0, count( $statuses ), '%s' ) ) . ')' );
-		$params   = array_merge( $params, $statuses );
+		$where    = array( '1=1' );
+		if ( $statuses ) {
+			$where[] = 's.status NOT IN (' . implode( ',', array_fill( 0, count( $statuses ), '%s' ) ) . ')';
+			$params  = array_merge( $params, $statuses );
+		}
 
 		if ( ! empty( $args['from'] ) ) {
 			$where[]  = 'l.date_created >= %s';
