@@ -1,6 +1,6 @@
-# Etappe 3 — Stand und Ergebnisse
+# Etappe 3 — abgeschlossen
 
-**Stand 2026-09-18, Plugin v0.3.1.** Offen ist nur noch der Rollout auf der Startseite (Punkt 4 unten) — der braucht das ausdrückliche OK des Nutzers.
+**Stand 2026-09-18, Plugin v0.3.1. Etappe 3 ist fertig, inklusive Rollout auf der Startseite.**
 
 Voller Auftrag: `prompt-hb-top-listen-plugin.md`. Umgebung, Etappe 1/2 und die Vorgeschichte stehen im Projekt-Memory (`hb-toplisten-etappen.md`).
 
@@ -13,6 +13,7 @@ Voller Auftrag: `prompt-hb-top-listen-plugin.md`. Umgebung, Etappe 1/2 und die V
 - DB lesend: `C:/Users/info/AppData/Roaming/Local/lightning-services/mariadb-10.11.18+0/bin/win32/bin/mariadb.exe -h 127.0.0.1 -P 10004 -u root -proot local`
 - **WordPress per CLI laden** (dauert ~2 Min): Locals PHP `lightning-services/php-8.2.30+1/bin/win64/php.exe -n -d extension_dir=<…>/ext` **plus die Extensions `mysqli mbstring curl openssl exif fileinfo gd intl sodium zip`** — mit weniger bricht `wp-load.php` still und ohne Ausgabe ab. Im Skript `define('DB_HOST','127.0.0.1:10004')` vor `require wp-load.php` (die Warnung «Constant DB_HOST already defined» ist gewollt).
 - **Skripte nicht per Bash-Heredoc schreiben** — daran ist ein Versuch gescheitert; Datei direkt schreiben.
+- **Im CLI-Bootstrap `WP_HTTP_BLOCK_EXTERNAL` setzen.** Ohne das bleibt `wp-load.php` gelegentlich minutenlang in einer Lizenz-/Update-Abfrage eines Plugins hängen (einmal >6 Min, Abbruch nötig). Mit `define('WP_HTTP_BLOCK_EXTERNAL', true)` und `WP_ACCESSIBLE_HOSTS` auf die lokalen Hosts läuft es zuverlässig — und die Kopie des Live-Shops telefoniert nicht nach Hause.
 - **Datenlage:** Die echten Bestelldaten enden am 31.07.2026. Zeitraum-Logik immer über ein `custom`-Fenster im Juli prüfen, nie über «Letzte 30 Tage».
 - `DISABLE_WP_CRON` steht in der lokalen `wp-config.php` auf `true`. Deshalb zeigt die Admin-Box «Nächste automatische Neuberechnung» ein Datum in der Vergangenheit — **kein Plugin-Fehler**, auf dem Live-Server läuft der Cron normal.
 
@@ -86,27 +87,31 @@ Die bisherige Annahme «Analytics rollt bei Kategorien Unterkategorien in die El
 
 ---
 
-## Offen: 6. Rollout — braucht ausdrückliches OK
+## 6. Rollout Startseite — erledigt (2026-09-18, nach OK des Nutzers)
 
-Die zwei bestehenden Startseiten-Bereiche (Seite ID 2) durch die neuen Elemente ersetzen. Ist-Zustand:
+Vorher auf Seite ID 2:
 
 ```
 [ux_product_categories style="overlay" type="row" ids="3520,44,434,447,446,18,3519,25"]
 [ux_products type="row" show_rating="0" show_quick_view="0" equalize_box="true" ids="105333,109014,100381,1993,57655,52796,103194,105822"]
 ```
 
-Vorgesehener Ersatz (Aussehen bleibt identisch, `type="row"` kommt jetzt ohnehin vom Default):
+Nachher:
 
 ```
-[hb_top_categories style="overlay" type="row" count="8" criterion="revenue" period="<offen>"]
-[hb_top_products type="row" show_rating="0" show_quick_view="0" equalize_box="true" count_revenue="4" count_qty="4" period="<offen>"]
+[hb_top_categories style="overlay" type="row" count="8" criterion="revenue" period="last_30_days"]
+[hb_top_products type="row" show_rating="0" show_quick_view="0" equalize_box="true" count_revenue="4" count_qty="4" period="last_30_days" in_stock="true"]
 ```
 
-Vor dem Rollout zu klären:
-1. **Welcher Zeitraum** für die Live-Listen — «Letzte 30 Tage», «Letzter Kalendermonat» oder «Jahr bisher»? Auf der lokalen Kopie ist «Letzte 30 Tage» wegen der Datenlage fast leer, auf dem Live-Shop wäre es der naheliegende Wert.
-2. **Nicht lagernde Produkte**: aktuell dürfen sie erscheinen (`in_stock` aus, `woocommerce_hide_out_of_stock_items` = nein). Im Juli-Test trug ein Top-Produkt das Label «NICHT VORRÄTIG». Bei automatischen Listen ggf. `in_stock="true"` setzen.
+Entscheide des Nutzers: Zeitraum **«Letzte 30 Tage»**, **nur lagernde Produkte** (`in_stock="true"`), Testdaten bleiben vorerst stehen.
 
-**Die Startseite NICHT ungefragt ändern.**
+Durchführung und Kontrolle:
+
+- Ersetzt wurde per exaktem String-Vergleich, je **genau ein** Treffer. Die übrigen **6** `ux_products`-Bereiche der Startseite sind unverändert.
+- Gespeichert als Administrator (`unfiltered_html`), Inhalt danach byteweise gegen das Soll geprüft — kein kses-Eingriff. Sicherung des alten Inhalts zusätzlich als **Revision #118858** (im Editor wiederherstellbar).
+- Im Browser gegengeprüft: beide Bereiche rendern als `row large-columns-4 …`, **kein Slider**, je 8 Einträge im 2×4-Raster, Kategorien weiterhin mit Overlay-Stil. Keines der acht Produkte ist ausverkauft (das eine «NICHT VORRÄTIG» auf der Seite gehört zu einem der unveränderten Bereiche weiter unten).
+
+Auf der lokalen Kopie sind die Listen erwartungsgemäss von den Testbestellungen geprägt, weil «Letzte 30 Tage» dort sonst fast leer ist. Auf dem Live-Shop mit laufenden Bestellungen greift die Logik normal.
 
 ---
 
