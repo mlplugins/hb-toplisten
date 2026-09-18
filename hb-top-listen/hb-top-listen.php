@@ -3,7 +3,7 @@
  * Plugin Name:          HB Top-Listen
  * Plugin URI:           https://github.com/mlplugins/hb-toplisten
  * Description:          Automatische Top-Produkte und Top-Kategorien aus echten Verkaufsdaten (WooCommerce Analytics) für das Flatsome-Theme. Konfiguration direkt im UX Builder.
- * Version:              0.3.0
+ * Version:              0.3.1
  * Requires at least:    6.4
  * Requires PHP:         8.0
  * Requires Plugins:     woocommerce
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HB_TOP_LISTEN_VERSION', '0.3.0' );
+define( 'HB_TOP_LISTEN_VERSION', '0.3.1' );
 define( 'HB_TOP_LISTEN_FILE', __FILE__ );
 define( 'HB_TOP_LISTEN_DIR', plugin_dir_path( __FILE__ ) );
 

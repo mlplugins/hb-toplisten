@@ -113,7 +113,8 @@ class HB_Top_Listen_Admin {
 			<?php self::render_cache_box(); ?>
 
 			<h2><?php esc_html_e( 'Kontrolltabelle', 'hb-top-listen' ); ?></h2>
-			<p><?php esc_html_e( 'Rangliste direkt aus den Analytics-Tabellen, ohne Cache. Zum Abgleich mit WooCommerce › Analytics › Produkte bzw. Kategorien (gleicher Zeitraum). Hinweis: Analytics summiert bei Kategorien Unterkategorien in die übergeordneten Kategorien auf, dieses Plugin nicht.', 'hb-top-listen' ); ?></p>
+			<p><?php esc_html_e( 'Rangliste direkt aus den Analytics-Tabellen, ohne Cache. Zum Abgleich mit WooCommerce › Analytics › Produkte bzw. Kategorien (gleicher Zeitraum).', 'hb-top-listen' ); ?></p>
+			<p><?php esc_html_e( 'Zwei bekannte Abweichungen gegenüber Analytics: (1) Die oben genannten unbezahlten Status zählt Analytics mit, dieses Plugin nicht. (2) Die Kategorie «Unkategorisiert» lässt dieses Plugin immer weg. Sonst stimmen die Zahlen Zeile für Zeile überein – auch Analytics rechnet jede Kategorie einzeln und summiert Unterkategorien nicht in die übergeordnete Kategorie auf.', 'hb-top-listen' ); ?></p>
 
 			<?php self::render_filter_form( $request ); ?>
 
